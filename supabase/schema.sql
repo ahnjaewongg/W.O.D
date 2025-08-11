@@ -5,6 +5,7 @@ create extension if not exists pgcrypto;
 create table if not exists public.users (
   id uuid primary key references auth.users(id) on delete cascade,
   email text unique not null,
+  group_key text,
   display_name text,
   created_at timestamptz not null default now()
 );
@@ -45,6 +46,7 @@ create index if not exists idx_sets_workout on public.sets(workout_id);
 create index if not exists idx_photos_workout on public.photos(workout_id);
 
 -- RLS enablement
+alter table public.users add column if not exists group_key text;
 alter table public.users enable row level security;
 alter table public.workouts enable row level security;
 alter table public.sets enable row level security;
