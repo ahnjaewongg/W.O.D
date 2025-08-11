@@ -49,7 +49,7 @@ export default function IndexPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-4">
       <header className="flex items-center justify-between">
-        <div className="text-xl font-semibold workout-character">운동 기록</div>
+        <div className="text-xl font-semibold workout-character friends-trio">운동 기록</div>
         <nav className="flex items-center gap-3">
           <Link to="/profile" className="text-blue-600 hover:underline">
             프로필

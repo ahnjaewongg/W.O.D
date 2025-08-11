@@ -26,7 +26,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 p-4">
+    <div className="mx-auto max-w-2xl space-y-6 p-4 profile-friends">
       <header className="flex items-center justify-between">
         <div className="text-xl font-semibold">프로필</div>
         <nav className="flex items-center gap-3">

@@ -287,7 +287,7 @@ export default function WorkoutEditor({ userId, workout, onSaved, onDeleted }: P
         <div>
           <div className="mb-2 font-semibold flex items-center gap-2">
             <span>사진</span>
-            <span className="text-lg">📸</span>
+            <img src="/character_plate.png" alt="plate" className="w-5 h-5 opacity-70" />
           </div>
           <ExistingPhotos workoutId={workout.id} />
           <PhotoUploader workoutId={workout.id} userId={userId} onUploaded={() => onSaved?.(workout)} />

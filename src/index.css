@@ -40,18 +40,18 @@ body::after {
   width: 100%;
   height: 100%;
   background-image: 
-    url('/character-muscle.png'), 
-    url('/character-dumbbell.png'),
+    url('/character_trio.jpg'), 
+    url('/character_plate.png'),
     url('/character-muscle.png'), 
     url('/character-dumbbell.png');
-  background-size: 60px 60px, 45px 45px, 40px 40px, 55px 55px;
+  background-size: 80px 50px, 40px 40px, 50px 50px, 45px 45px;
   background-position: 
-    10% 20%,
-    85% 15%,
-    20% 75%,
-    90% 80%;
+    5% 10%,
+    88% 20%,
+    15% 80%,
+    85% 75%;
   background-repeat: no-repeat;
-  opacity: 0.08;
+  opacity: 0.1;
   z-index: -1;
   pointer-events: none;
   animation: float 25s ease-in-out infinite;
@@ -70,15 +70,15 @@ body::after {
   position: relative;
 }
 
-/* Add dumbbell character to workout cards */
+/* Add plate character to workout cards */
 .workout-item::after {
   content: '';
   position: absolute;
   bottom: 12px;
   right: 12px;
-  width: 24px;
-  height: 24px;
-  background-image: url('/character-dumbbell.png');
+  width: 28px;
+  height: 28px;
+  background-image: url('/character_plate.png');
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
@@ -88,7 +88,7 @@ body::after {
 
 .workout-item:hover::after {
   opacity: 0.9;
-  transform: rotate(5deg);
+  transform: rotate(10deg) scale(1.05);
 }
 
 .card:hover {
@@ -133,6 +133,25 @@ body::after {
   animation: bounce 3s ease-in-out infinite;
 }
 
+/* Special trio friends decoration */
+.friends-trio {
+  padding-right: 60px;
+}
+
+.friends-trio::before {
+  width: 50px;
+  height: 32px;
+  background-image: url('/character_trio.jpg');
+  right: 0;
+  animation: friendsWave 4s ease-in-out infinite;
+}
+
+@keyframes friendsWave {
+  0%, 100% { transform: translateY(-50%) scale(1); }
+  25% { transform: translateY(-55%) scale(1.02); }
+  75% { transform: translateY(-45%) scale(0.98); }
+}
+
 @keyframes bounce {
   0%, 100% { transform: translateY(-50%) scale(1); }
   50% { transform: translateY(-60%) scale(1.05); }
@@ -151,15 +170,15 @@ body::after {
 .calendar-day-with-workout::after {
   content: '';
   position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 12px;
-  height: 12px;
-  background-image: url('/character-muscle.png');
+  bottom: 1px;
+  right: 1px;
+  width: 14px;
+  height: 14px;
+  background-image: url('/character_plate.png');
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-  opacity: 0.7;
+  opacity: 0.8;
 }
 
 /* Smooth transitions for all interactive elements */
@@ -176,29 +195,50 @@ button, input, select, textarea {
 .login-background::before {
   content: '';
   position: absolute;
-  top: 10%;
-  left: 8%;
-  width: 80px;
+  top: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
   height: 80px;
-  background-image: url('/character-muscle.png');
+  background-image: url('/character_trio.jpg');
   background-size: contain;
   background-repeat: no-repeat;
-  opacity: 0.3;
+  opacity: 0.4;
   animation: bounce 4s ease-in-out infinite;
 }
 
 .login-background::after {
   content: '';
   position: absolute;
-  bottom: 15%;
-  right: 10%;
-  width: 70px;
-  height: 70px;
-  background-image: url('/character-dumbbell.png');
+  bottom: 12%;
+  right: 8%;
+  width: 60px;
+  height: 60px;
+  background-image: url('/character_plate.png');
   background-size: contain;
   background-repeat: no-repeat;
-  opacity: 0.25;
+  opacity: 0.3;
   animation: bounce 3.5s ease-in-out infinite reverse;
+}
+
+/* Profile page friends decoration */
+.profile-friends {
+  position: relative;
+}
+
+.profile-friends::before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 100px;
+  height: 70px;
+  background-image: url('/character_trio.jpg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.15;
+  z-index: -1;
+  animation: friendsWave 5s ease-in-out infinite;
 }
 
 /* Custom scrollbar */
