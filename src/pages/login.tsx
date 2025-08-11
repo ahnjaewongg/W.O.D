@@ -33,6 +33,8 @@ export default function LoginPage() {
             email,
             display_name: email.split('@')[0],
           });
+          // ensure group_key is auto-assigned from mapping (server-side)
+          await supabase.rpc('ensure_group_key_for_current_user');
         }
       }
       navigate('/');

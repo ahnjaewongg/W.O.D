@@ -55,4 +55,19 @@ from public.group_members gm
 where lower(u.email) = lower(gm.email)
   and (u.group_key is null or u.group_key <> gm.group_key);
 
+-- RPC: ensure group_key for the current user based on mapping
+create or replace function public.ensure_group_key_for_current_user()
+returns void
+language sql
+security definer
+as $$
+  update public.users u
+  set group_key = gm.group_key
+  from public.group_members gm
+  where u.id = auth.uid()
+    and (u.group_key is null or u.group_key = '')
+    and lower(u.email) = lower(gm.email);
+$$;
+
+
 
