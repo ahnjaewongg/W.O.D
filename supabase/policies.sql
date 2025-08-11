@@ -16,6 +16,16 @@ drop policy if exists "Workouts select own" on public.workouts;
 create policy "Workouts select own" on public.workouts
 for select using (user_id = auth.uid());
 
+-- Allow 3 fixed friends to see each other's workouts
+drop policy if exists "Workouts select friends" on public.workouts;
+create policy "Workouts select friends" on public.workouts
+for select using (
+  auth.email() in ('friend1@example.com','friend2@example.com','friend3@example.com')
+  and user_id in (
+    select id from public.users where email in ('friend1@example.com','friend2@example.com','friend3@example.com')
+  )
+);
+
 drop policy if exists "Workouts insert own" on public.workouts;
 create policy "Workouts insert own" on public.workouts
 for insert with check (user_id = auth.uid());
@@ -32,7 +42,12 @@ for delete using (user_id = auth.uid());
 drop policy if exists "Sets select via workout" on public.sets;
 create policy "Sets select via workout" on public.sets
 for select using (exists (
-  select 1 from public.workouts w where w.id = sets.workout_id and w.user_id = auth.uid()
+  select 1 from public.workouts w where w.id = sets.workout_id and (
+    w.user_id = auth.uid() or (
+      auth.email() in ('friend1@example.com','friend2@example.com','friend3@example.com') and
+      w.user_id in (select id from public.users where email in ('friend1@example.com','friend2@example.com','friend3@example.com'))
+    )
+  )
 ));
 
 drop policy if exists "Sets insert via workout" on public.sets;
@@ -59,8 +74,17 @@ for delete using (exists (
 drop policy if exists "Photos select own" on public.photos;
 create policy "Photos select own" on public.photos
 for select using (
-  user_id = auth.uid() and exists (
-    select 1 from public.workouts w where w.id = photos.workout_id and w.user_id = auth.uid()
+  (
+    user_id = auth.uid() and exists (
+      select 1 from public.workouts w where w.id = photos.workout_id and w.user_id = auth.uid()
+    )
+  ) or (
+    auth.email() in ('friend1@example.com','friend2@example.com','friend3@example.com') and exists (
+      select 1 from public.workouts w
+      where w.id = photos.workout_id and w.user_id in (
+        select id from public.users where email in ('friend1@example.com','friend2@example.com','friend3@example.com')
+      )
+    )
   )
 );
 

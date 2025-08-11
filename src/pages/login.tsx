@@ -47,9 +47,9 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
       <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4 rounded-lg bg-white p-6 shadow">
-        <div className="text-center text-xl font-semibold">{mode === 'login' ? 'Sign in' : 'Create account'}</div>
+        <div className="text-center text-xl font-semibold">{mode === 'login' ? '로그인' : '회원가입'}</div>
         <label className="block">
-          <div className="text-sm text-gray-600">Email</div>
+          <div className="text-sm text-gray-600">이메일</div>
           <input
             type="email"
             required
@@ -59,7 +59,7 @@ export default function LoginPage() {
           />
         </label>
         <label className="block">
-          <div className="text-sm text-gray-600">Password</div>
+          <div className="text-sm text-gray-600">비밀번호</div>
           <input
             type="password"
             required
@@ -73,7 +73,7 @@ export default function LoginPage() {
           disabled={loading}
           className="w-full rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
         >
-          {loading ? 'Please wait...' : mode === 'login' ? 'Sign in' : 'Register'}
+          {loading ? 'Please wait...' : mode === 'login' ? '로그인' : '회원가입'}
         </button>
         <div className="text-center text-sm">
           {mode === 'login' ? (

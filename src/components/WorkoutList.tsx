@@ -23,7 +23,6 @@ export default function WorkoutList({ userId, filterBodyPart, filterDate, refres
       const q = supabase
         .from('workouts')
         .select('*, photos:photos(*), sets:sets(*)')
-        .eq('user_id', userId)
         .order('date', { ascending: false });
       const query = (() => {
         let cur = q;

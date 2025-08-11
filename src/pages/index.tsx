@@ -33,7 +33,6 @@ export default function IndexPage() {
     supabase
       .from('workouts')
       .select('date')
-      .eq('user_id', sessionUserId)
       .then(({ data }) => setDatesWithWorkouts((data ?? []).map((d) => d.date)));
   }, [sessionUserId, selectedWorkout, refreshKey]);
 
