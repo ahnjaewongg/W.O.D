@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  @apply bg-gradient-to-br from-gray-50 via-white to-gray-100 text-gray-900;
+}
+
+.card {
+  @apply bg-white/80 backdrop-blur shadow-sm rounded-xl border;
+}
+
+.btn-primary {
+  @apply rounded bg-blue-600 text-white px-4 py-2 hover:bg-blue-700 disabled:opacity-50;
+}
+
+.btn-outline {
+  @apply rounded border px-3 py-2 hover:bg-gray-50;
+}
+
+

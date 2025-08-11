@@ -1,0 +1,1 @@
+{"root":["./src/main.tsx","./src/components/photouploader.tsx","./src/components/workouteditor.tsx","./src/components/workoutlist.tsx","./src/lib/supabaseclient.ts","./src/pages/index.tsx","./src/pages/login.tsx","./src/pages/profile.tsx","./src/types/db.ts"],"version":"5.9.2"}
