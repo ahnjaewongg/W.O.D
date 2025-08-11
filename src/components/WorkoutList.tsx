@@ -61,7 +61,7 @@ export default function WorkoutList({ userId, filterBodyPart, filterDate, refres
             {items.map((w) => (
               <div
                 key={w.id}
-                className="flex cursor-pointer items-center justify-between rounded border p-3 hover:bg-gray-50 bg-white/70 backdrop-blur"
+                className="flex cursor-pointer items-center justify-between rounded border p-3 hover:bg-gray-50 bg-white/70 backdrop-blur workout-item"
                 onClick={() => onSelect?.(w)}
               >
                 <div>

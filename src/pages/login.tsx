@@ -16,6 +16,18 @@ export default function LoginPage() {
       if (mode === 'login') {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        
+        // 로그인 후에도 users 테이블 레코드 및 group_key 확인
+        const { data: userInfo } = await supabase.auth.getUser();
+        if (userInfo.user) {
+          await supabase.from('users').upsert({
+            id: userInfo.user.id,
+            email: userInfo.user.email || email,
+            display_name: (userInfo.user.email || email).split('@')[0],
+          });
+          // ensure group_key is auto-assigned from mapping (server-side)
+          await supabase.rpc('ensure_group_key_for_current_user');
+        }
       } else {
         // signUp 이후 세션이 없으면(Confirm Email ON) 로그인 한번 더 시도 후 프로필 upsert
         const { data, error } = await supabase.auth.signUp({ email, password });
@@ -47,7 +59,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+    <div className="flex min-h-screen items-center justify-center p-4 login-background">
       <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4 rounded-lg bg-white p-6 shadow">
         <div className="text-center text-xl font-semibold">{mode === 'login' ? '로그인' : '회원가입'}</div>
         <label className="block">

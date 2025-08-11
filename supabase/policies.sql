@@ -3,8 +3,11 @@ alter table public.users add column if not exists group_key text;
 
 -- Users policies
 drop policy if exists "Users select own" on public.users;
-create policy "Users select own" on public.users
-for select using (id = auth.uid());
+drop policy if exists "Users select same group" on public.users;
+drop policy if exists "Users select authenticated" on public.users;
+
+create policy "Users select authenticated" on public.users
+for select using (auth.role() = 'authenticated');
 
 drop policy if exists "Users insert self" on public.users;
 create policy "Users insert self" on public.users
@@ -24,7 +27,7 @@ for select using (
     join public.users u_me on u_me.id = auth.uid()
     where u_owner.id = workouts.user_id
       and coalesce(u_owner.group_key, '') <> ''
-      and u_owner.group_key = u_me.group_key
+      and trim(u_owner.group_key) = trim(u_me.group_key)
   )
 );
 
@@ -50,7 +53,7 @@ for select using (exists (
   join public.users u_me on u_me.id = auth.uid()
   where w.id = sets.workout_id
     and coalesce(u_owner.group_key, '') <> ''
-    and u_owner.group_key = u_me.group_key
+    and trim(u_owner.group_key) = trim(u_me.group_key)
 ));
 
 drop policy if exists "Sets insert via workout" on public.sets;
@@ -84,7 +87,7 @@ for select using (
     join public.users u_me on u_me.id = auth.uid()
     where w.id = photos.workout_id
       and coalesce(u_owner.group_key, '') <> ''
-      and u_owner.group_key = u_me.group_key
+      and trim(u_owner.group_key) = trim(u_me.group_key)
   )
 );
 

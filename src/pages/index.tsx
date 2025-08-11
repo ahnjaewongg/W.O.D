@@ -49,7 +49,7 @@ export default function IndexPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-4">
       <header className="flex items-center justify-between">
-        <div className="text-xl font-semibold">운동 기록</div>
+        <div className="text-xl font-semibold workout-character">운동 기록</div>
         <nav className="flex items-center gap-3">
           <Link to="/profile" className="text-blue-600 hover:underline">
             프로필
@@ -126,8 +126,8 @@ export default function IndexPage() {
                 <button
                   key={i}
                   type="button"
-                  className={`h-12 rounded border text-sm ${
-                    hasWorkout ? 'bg-green-50 border-green-300' : 'bg-white'
+                  className={`h-12 rounded border text-sm transition-colors ${
+                    hasWorkout ? 'bg-orange-50 border-orange-300 calendar-day-with-workout' : 'bg-white hover:bg-orange-25'
                   }`}
                   title={iso}
                   onClick={() => setFilterDate(iso)}

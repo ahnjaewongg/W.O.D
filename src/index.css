@@ -1,25 +1,223 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 html, body, #root {
   height: 100%;
+  font-family: 'Nunito', sans-serif;
 }
 
 body {
-  @apply bg-gradient-to-br from-gray-50 via-white to-gray-100 text-gray-900;
+  @apply text-gray-900;
+  background: linear-gradient(135deg, #f5f3f0 0%, #faf8f5 25%, #f0ede8 50%, #faf8f5 75%, #f5f3f0 100%);
+  background-attachment: fixed;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(255, 182, 120, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 160, 100, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(255, 200, 150, 0.08) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Floating character icons animation */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    url('/character-muscle.png'), 
+    url('/character-dumbbell.png'),
+    url('/character-muscle.png'), 
+    url('/character-dumbbell.png');
+  background-size: 60px 60px, 45px 45px, 40px 40px, 55px 55px;
+  background-position: 
+    10% 20%,
+    85% 15%,
+    20% 75%,
+    90% 80%;
+  background-repeat: no-repeat;
+  opacity: 0.08;
+  z-index: -1;
+  pointer-events: none;
+  animation: float 25s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-10px) rotate(2deg); }
+  66% { transform: translateY(5px) rotate(-1deg); }
 }
 
 .card {
-  @apply bg-white/80 backdrop-blur shadow-sm rounded-xl border;
+  @apply bg-white/85 backdrop-blur-sm shadow-lg rounded-2xl border border-orange-100/50;
+  box-shadow: 0 8px 32px rgba(255, 182, 120, 0.1), 0 2px 16px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+/* Add dumbbell character to workout cards */
+.workout-item::after {
+  content: '';
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  width: 24px;
+  height: 24px;
+  background-image: url('/character-dumbbell.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.6;
+  transition: all 0.3s ease;
+}
+
+.workout-item:hover::after {
+  opacity: 0.9;
+  transform: rotate(5deg);
+}
+
+.card:hover {
+  @apply shadow-xl;
+  box-shadow: 0 12px 40px rgba(255, 182, 120, 0.15), 0 4px 20px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
 }
 
 .btn-primary {
-  @apply rounded bg-blue-600 text-white px-4 py-2 hover:bg-blue-700 disabled:opacity-50;
+  @apply rounded-xl bg-gradient-to-r from-orange-400 to-orange-500 text-white px-4 py-2 hover:from-orange-500 hover:to-orange-600 disabled:opacity-50 font-medium;
+  box-shadow: 0 4px 15px rgba(255, 154, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(255, 154, 0, 0.4);
 }
 
 .btn-outline {
-  @apply rounded border px-3 py-2 hover:bg-gray-50;
+  @apply rounded-xl border-2 border-orange-200 px-3 py-2 hover:bg-orange-50 hover:border-orange-300 transition-all duration-200;
+}
+
+/* Character-inspired decorative elements */
+.workout-character {
+  position: relative;
+  padding-right: 40px;
+}
+
+.workout-character::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  background-image: url('/character-muscle.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  transform: translateY(-50%);
+  animation: bounce 3s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(-50%) scale(1); }
+  50% { transform: translateY(-60%) scale(1.05); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.1); opacity: 1; }
+}
+
+/* Calendar days with workout indicator */
+.calendar-day-with-workout {
+  position: relative;
+}
+
+.calendar-day-with-workout::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 12px;
+  height: 12px;
+  background-image: url('/character-muscle.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.7;
+}
+
+/* Smooth transitions for all interactive elements */
+button, input, select, textarea {
+  transition: all 0.2s ease;
+}
+
+/* Login page character decorations */
+.login-background {
+  position: relative;
+  background: linear-gradient(135deg, #faf8f5 0%, #f5f3f0 50%, #faf8f5 100%);
+}
+
+.login-background::before {
+  content: '';
+  position: absolute;
+  top: 10%;
+  left: 8%;
+  width: 80px;
+  height: 80px;
+  background-image: url('/character-muscle.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.3;
+  animation: bounce 4s ease-in-out infinite;
+}
+
+.login-background::after {
+  content: '';
+  position: absolute;
+  bottom: 15%;
+  right: 10%;
+  width: 70px;
+  height: 70px;
+  background-image: url('/character-dumbbell.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.25;
+  animation: bounce 3.5s ease-in-out infinite reverse;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 182, 120, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #ffb678, #ff9a56);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #ff9a56, #ff7f36);
 }
 
 
