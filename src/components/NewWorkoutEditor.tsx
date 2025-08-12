@@ -1,12 +1,26 @@
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { supabase } from '../lib/supabaseClient';
-import type { ExerciseWithSets, ExerciseRow, WorkoutRow } from '../types/db';
-import PhotoUploader from './PhotoUploader';
+import type { ExerciseWithSets, WorkoutRow } from '../types/db';
 import ExerciseEditor from './ExerciseEditor';
 
-type EditableExercise = Omit<ExerciseWithSets, 'id' | 'created_at'> & { 
-  id?: string; 
+type EditableExercise = {
+  id?: string;
+  workout_id: string;
+  exercise_name: string;
+  exercise_index: number;
+  notes: string | null;
+  created_at?: string;
+  sets: SetRow[];
+};
+
+type SetRow = {
+  id?: string;
+  exercise_id: string;
+  rep_count: number;
+  weight: number | null;
+  set_index: number;
+  notes: string | null;
   created_at?: string;
 };
 
@@ -83,9 +97,26 @@ export default function NewWorkoutEditor({ userId, workout, onSaved, onDeleted }
     loadRecentWorkouts();
   }, [userId, workout]);
 
-  const updateExercise = (index: number, updatedExercise: EditableExercise) => {
+  const updateExercise = (index: number, updatedExercise: ExerciseWithSets) => {
+    const editableExercise: EditableExercise = {
+      id: updatedExercise.id,
+      workout_id: updatedExercise.workout_id,
+      exercise_name: updatedExercise.exercise_name,
+      exercise_index: index,
+      notes: updatedExercise.notes,
+      created_at: updatedExercise.created_at,
+      sets: updatedExercise.sets.map(set => ({
+        id: set.id,
+        exercise_id: set.exercise_id,
+        rep_count: set.rep_count,
+        weight: set.weight,
+        set_index: set.set_index,
+        notes: set.notes,
+        created_at: set.created_at,
+      }))
+    };
     setExercises(prev => prev.map((ex, idx) => 
-      idx === index ? { ...updatedExercise, exercise_index: idx } : ex
+      idx === index ? editableExercise : ex
     ));
   };
 
@@ -123,10 +154,12 @@ export default function NewWorkoutEditor({ userId, workout, onSaved, onDeleted }
         exercise_index: index,
         notes: exercise.notes,
         sets: exercise.sets.map((set, setIndex) => ({
-          ...set,
           id: crypto.randomUUID(),
           exercise_id: '',
+          rep_count: set.rep_count,
+          weight: set.weight,
           set_index: setIndex + 1,
+          notes: set.notes,
           created_at: new Date().toISOString(),
         })),
       }));
@@ -290,7 +323,23 @@ export default function NewWorkoutEditor({ userId, workout, onSaved, onDeleted }
           {exercises.map((exercise, index) => (
             <ExerciseEditor
               key={`${exercise.id || 'new'}-${index}`}
-              exercise={exercise}
+              exercise={{
+                id: exercise.id || crypto.randomUUID(),
+                workout_id: exercise.workout_id,
+                exercise_name: exercise.exercise_name,
+                exercise_index: exercise.exercise_index,
+                notes: exercise.notes,
+                created_at: exercise.created_at || new Date().toISOString(),
+                sets: exercise.sets.map(set => ({
+                  id: set.id || crypto.randomUUID(),
+                  exercise_id: set.exercise_id,
+                  rep_count: set.rep_count,
+                  weight: set.weight,
+                  set_index: set.set_index,
+                  notes: set.notes,
+                  created_at: set.created_at || new Date().toISOString(),
+                }))
+              }}
               exerciseIndex={index}
               onUpdate={(updatedExercise) => updateExercise(index, updatedExercise)}
               onDelete={() => deleteExercise(index)}
@@ -322,42 +371,4 @@ export default function NewWorkoutEditor({ userId, workout, onSaved, onDeleted }
   );
 }
 
-function ExistingPhotos({ workoutId }: { workoutId: string }) {
-  const [urls, setUrls] = useState<string[]>([]);
-  useEffect(() => {
-    supabase
-      .from('photos')
-      .select('public_url, storage_path')
-      .eq('workout_id', workoutId)
-      .order('created_at', { ascending: false })
-      .then(async ({ data }) => {
-        const bucket = 'workout-photos';
-        const resolved = await Promise.all(
-          (data ?? []).map(async (p) => {
-            if (p.public_url) return p.public_url as string;
-            const { data: signed } = await supabase.storage.from(bucket).createSignedUrl(p.storage_path as string, 60 * 60 * 24 * 7);
-            return signed?.signedUrl ?? '';
-          })
-        );
-        setUrls(resolved.filter(Boolean));
-      });
-  }, [workoutId]);
-  if (!urls.length) return null;
-  return (
-    <div className="mb-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
-      {urls.map((u, i) => (
-        <div key={i} className="relative w-full overflow-hidden rounded-lg bg-gray-100">
-          <div className="aspect-[4/3] w-full">
-            <img 
-              src={u} 
-              className="h-full w-full object-cover" 
-              onError={(e) => {
-                e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgZmlsbD0iI2Y5ZmFmYiIvPjx0ZXh0IHg9IjEwMCIgeT0iNzUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzljYTNhZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9IjAuM2VtIj7snbTrr7jsp4A8L3RleHQ+PC9zdmc+';
-              }}
-            />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
+
