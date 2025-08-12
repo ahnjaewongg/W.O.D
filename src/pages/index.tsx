@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { addDays, endOfMonth, endOfWeek, format, isSameDay, startOfMonth, startOfWeek } from 'date-fns';
 import { supabase } from '../lib/supabaseClient';
-import type { WorkoutRow } from '../types/db';
+import type { WorkoutRow, ExerciseWithSets } from '../types/db';
 import WorkoutList from '../components/WorkoutList';
-import WorkoutEditor from '../components/WorkoutEditor';
+import NewWorkoutEditor from '../components/NewWorkoutEditor';
 
 export default function IndexPage() {
   const [sessionUserId, setSessionUserId] = useState<string | null>(null);
@@ -44,6 +44,147 @@ export default function IndexPage() {
     return days;
   }, [calendarMonth]);
 
+  // 운동 복사 함수
+  const handleCopyWorkout = async (sourceWorkout: WorkoutRow & { exercises: ExerciseWithSets[] }) => {
+    try {
+      const today = format(new Date(), 'yyyy-MM-dd');
+      
+      // 1. 새로운 운동 생성 (오늘 날짜로)
+      const { data: newWorkout, error: workoutError } = await supabase
+        .from('workouts')
+        .insert({
+          user_id: sessionUserId,
+          date: today,
+          body_part: sourceWorkout.body_part
+        })
+        .select()
+        .single();
+      
+      if (workoutError) throw workoutError;
+      
+      // 2. 기존 운동들과 세트들 복사
+      if (sourceWorkout.exercises && sourceWorkout.exercises.length > 0) {
+        for (const sourceExercise of sourceWorkout.exercises) {
+          // 운동 복사
+          const { data: newExercise, error: exerciseError } = await supabase
+            .from('exercises')
+            .insert({
+              workout_id: newWorkout.id,
+              exercise_name: sourceExercise.exercise_name,
+              exercise_index: sourceExercise.exercise_index,
+              notes: sourceExercise.notes
+            })
+            .select()
+            .single();
+          
+          if (exerciseError) throw exerciseError;
+          
+          // 세트들 복사
+          if (sourceExercise.sets && sourceExercise.sets.length > 0) {
+            const newSets = sourceExercise.sets.map((set, index) => ({
+              exercise_id: newExercise.id,
+              rep_count: set.rep_count,
+              weight: set.weight,
+              set_index: index + 1,
+              notes: set.notes
+            }));
+            
+            const { error: setsError } = await supabase
+              .from('sets')
+              .insert(newSets);
+            
+            if (setsError) throw setsError;
+          }
+        }
+      }
+      
+      // 성공 메시지
+      alert(`운동이 오늘(${today})로 성공적으로 복사되었습니다!`);
+      setRefreshKey(k => k + 1);
+      
+    } catch (error) {
+      console.error('운동 복사 실패:', error);
+      alert(`운동 복사에 실패했습니다: ${(error as Error).message}`);
+    }
+  };
+
+  // 하루 전체 복사 함수
+  const handleCopyDay = async (sourceDate: string, sourceWorkouts: (WorkoutRow & { exercises: ExerciseWithSets[] })[]) => {
+    try {
+      const today = format(new Date(), 'yyyy-MM-dd');
+      
+      if (sourceDate === today) {
+        alert('같은 날짜로는 복사할 수 없습니다.');
+        return;
+      }
+      
+      // 복사 확인
+      const confirmed = confirm(`${sourceDate}의 모든 운동(${sourceWorkouts.length}개)을 오늘(${today})로 복사하시겠습니까?`);
+      if (!confirmed) return;
+      
+      // 각 운동을 순차적으로 복사
+      for (const sourceWorkout of sourceWorkouts) {
+        // 1. 새로운 운동 생성
+        const { data: newWorkout, error: workoutError } = await supabase
+          .from('workouts')
+          .insert({
+            user_id: sessionUserId,
+            date: today,
+            body_part: sourceWorkout.body_part,
+            notes: sourceWorkout.notes
+          })
+          .select()
+          .single();
+        
+        if (workoutError) throw workoutError;
+        
+        // 2. 기존 운동들과 세트들 복사
+        if (sourceWorkout.exercises && sourceWorkout.exercises.length > 0) {
+          for (const sourceExercise of sourceWorkout.exercises) {
+            // 운동 복사
+            const { data: newExercise, error: exerciseError } = await supabase
+              .from('exercises')
+              .insert({
+                workout_id: newWorkout.id,
+                exercise_name: sourceExercise.exercise_name,
+                exercise_index: sourceExercise.exercise_index,
+                notes: sourceExercise.notes
+              })
+              .select()
+              .single();
+            
+            if (exerciseError) throw exerciseError;
+            
+            // 세트들 복사
+            if (sourceExercise.sets && sourceExercise.sets.length > 0) {
+              const newSets = sourceExercise.sets.map((set, index) => ({
+                exercise_id: newExercise.id,
+                rep_count: set.rep_count,
+                weight: set.weight,
+                set_index: index + 1,
+                notes: set.notes
+              }));
+              
+              const { error: setsError } = await supabase
+                .from('sets')
+                .insert(newSets);
+              
+              if (setsError) throw setsError;
+            }
+          }
+        }
+      }
+      
+      // 성공 메시지
+      alert(`${sourceDate}의 모든 운동이 오늘(${today})로 성공적으로 복사되었습니다!`);
+      setRefreshKey(k => k + 1);
+      
+    } catch (error) {
+      console.error('하루 전체 복사 실패:', error);
+      alert(`하루 전체 복사에 실패했습니다: ${(error as Error).message}`);
+    }
+  };
+
   if (!sessionUserId) return null;
 
   return (
@@ -51,7 +192,7 @@ export default function IndexPage() {
       <header className="flex items-center justify-between">
         <div className="text-xl font-semibold workout-character friends-trio">운동 기록</div>
         <nav className="flex items-center gap-3">
-          <Link to="/profile" className="text-blue-600 hover:underline">
+          <Link to="/profile" className="text-orange-600 hover:underline">
             프로필
           </Link>
           <button
@@ -93,7 +234,15 @@ export default function IndexPage() {
               운동 기록 추가
             </button>
           </div>
-          <WorkoutList userId={sessionUserId} filterBodyPart={filterBodyPart} filterDate={filterDate} refreshKey={refreshKey} onSelect={(w) => setSelectedWorkout(w)} />
+          <WorkoutList 
+            userId={sessionUserId} 
+            filterBodyPart={filterBodyPart} 
+            filterDate={filterDate} 
+            refreshKey={refreshKey} 
+            onSelect={(w) => setSelectedWorkout(w)}
+            onCopyWorkout={handleCopyWorkout}
+            onCopyDay={handleCopyDay}
+          />
         </div>
         <div className="card space-y-3 p-3">
           <div className="flex items-center justify-between">
@@ -149,7 +298,7 @@ export default function IndexPage() {
                 ✕
               </button>
             </div>
-            <WorkoutEditor
+            <NewWorkoutEditor
               userId={sessionUserId}
               workout={selectedWorkout.id ? selectedWorkout : null}
               onSaved={() => {

@@ -25,6 +25,7 @@ export default function WorkoutEditor({ userId, workout, onSaved, onDeleted }: P
   const [saving, setSaving] = useState(false);
   const [copyPrevEnabled, setCopyPrevEnabled] = useState(true);
   const [bulkCount, setBulkCount] = useState(3);
+  const [recentWorkouts, setRecentWorkouts] = useState<(WorkoutRow & { sets: SetRow[] })[]>([]);
 
   useEffect(() => {
     const load = async () => {
@@ -41,6 +42,25 @@ export default function WorkoutEditor({ userId, workout, onSaved, onDeleted }: P
     };
     load();
   }, [workout]);
+
+  // 최근 운동 기록 불러오기 (새 운동 추가할 때만)
+  useEffect(() => {
+    const loadRecentWorkouts = async () => {
+      if (workout) return; // 기존 운동 수정 시에는 템플릿 불필요
+      
+      const { data } = await supabase
+        .from('workouts')
+        .select('*, sets:sets(*)')
+        .eq('user_id', userId)
+        .order('date', { ascending: false })
+        .limit(10);
+      
+      if (data) {
+        setRecentWorkouts(data as (WorkoutRow & { sets: SetRow[] })[]);
+      }
+    };
+    loadRecentWorkouts();
+  }, [userId, workout]);
 
   function updateSet(i: number, patch: Partial<EditableSet>) {
     setSets((prev) => prev.map((s, idx) => (idx === i ? { ...s, ...patch } : s)));
@@ -156,8 +176,50 @@ export default function WorkoutEditor({ userId, workout, onSaved, onDeleted }: P
     if (!error) onDeleted?.();
   }
 
+  // 템플릿에서 운동 불러오기
+  function loadFromTemplate(templateWorkout: WorkoutRow & { sets: SetRow[] }) {
+    setBodyPart(templateWorkout.body_part);
+    setNotes('');
+    
+    const templateSets: EditableSet[] = templateWorkout.sets.map((set, index) => ({
+      exercise_name: set.exercise_name,
+      rep_count: set.rep_count,
+      weight: set.weight,
+      set_index: index
+    }));
+    
+    setSets(templateSets.length > 0 ? templateSets : [emptySet(0)]);
+  }
+
   return (
     <div className="space-y-4">
+      {/* 새 운동일 때만 템플릿 선택 표시 */}
+      {!workout && recentWorkouts.length > 0 && (
+        <div className="card p-3 bg-blue-50 border-blue-200">
+          <div className="text-sm font-semibold text-blue-800 mb-2">🚀 빠른 시작</div>
+          <div className="text-xs text-blue-600 mb-2">이전 운동을 템플릿으로 사용하세요</div>
+          <select 
+            onChange={(e) => {
+              if (e.target.value) {
+                const templateWorkout = recentWorkouts.find(w => w.id === e.target.value);
+                if (templateWorkout) {
+                  loadFromTemplate(templateWorkout);
+                }
+              }
+            }}
+            className="w-full rounded border px-3 py-2 text-sm"
+            defaultValue=""
+          >
+            <option value="">템플릿 선택...</option>
+            {recentWorkouts.map((w) => (
+              <option key={w.id} value={w.id}>
+                {w.date} - {w.body_part} ({w.sets?.length || 0}개 세트)
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+      
       <div className="grid grid-cols-2 gap-2">
         <label className="block">
           <div className="text-sm text-gray-600">날짜</div>
@@ -337,9 +399,15 @@ function ExistingPhotos({ workoutId }: { workoutId: string }) {
   return (
     <div className="mb-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
       {urls.map((u, i) => (
-        <div key={i} className="relative w-full overflow-hidden rounded-lg bg-black/5">
-          <div className="aspect-[4/5] w-full">
-            <img src={u} className="h-full w-full object-cover" />
+        <div key={i} className="relative w-full overflow-hidden rounded-lg bg-gray-100">
+          <div className="aspect-[4/3] w-full">
+            <img 
+              src={u} 
+              className="h-full w-full object-cover" 
+              onError={(e) => {
+                e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgZmlsbD0iI2Y5ZmFmYiIvPjx0ZXh0IHg9IjEwMCIgeT0iNzUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzljYTNhZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9IjAuM2VtIj7snbTrr7jsp4A8L3RleHQ+PC9zdmc+';
+              }}
+            />
           </div>
         </div>
       ))}
