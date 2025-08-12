@@ -26,11 +26,9 @@ if ('serviceWorker' in navigator) {
 }
 
 // PWA 설치 프롬프트 처리
-let deferredPrompt: any;
 window.addEventListener('beforeinstallprompt', (e) => {
   console.log('PWA 설치 프롬프트 준비됨');
   e.preventDefault();
-  deferredPrompt = e;
   
   // 사용자에게 설치 버튼을 보여줄 수 있음
   // 여기서는 콘솔에만 로그를 남김
@@ -38,7 +36,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 // PWA 설치 완료 후
-window.addEventListener('appinstalled', (evt) => {
+window.addEventListener('appinstalled', () => {
   console.log('PWA가 성공적으로 설치되었습니다!');
 });
 
