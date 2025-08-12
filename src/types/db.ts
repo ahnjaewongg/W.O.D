@@ -14,6 +14,10 @@ export type WorkoutRow = {
   created_at: string;
 };
 
+export type WorkoutWithUser = WorkoutRow & {
+  user: UserRow;
+};
+
 export type ExerciseRow = {
   id: string;
   workout_id: string;

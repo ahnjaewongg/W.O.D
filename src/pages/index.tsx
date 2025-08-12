@@ -50,7 +50,7 @@ export default function IndexPage() {
   }, [calendarMonth]);
 
   // 운동 복사 함수
-  const handleCopyWorkout = async (sourceWorkout: WorkoutRow & { exercises: ExerciseWithSets[] }) => {
+  const handleCopyWorkout = async (sourceWorkout: WorkoutRow & { exercises: ExerciseWithSets[]; user?: any }) => {
     try {
       const today = format(new Date(), 'yyyy-MM-dd');
       
@@ -114,7 +114,7 @@ export default function IndexPage() {
   };
 
   // 하루 전체 복사 함수
-  const handleCopyDay = async (sourceDate: string, sourceWorkouts: (WorkoutRow & { exercises: ExerciseWithSets[] })[]) => {
+  const handleCopyDay = async (sourceDate: string, sourceWorkouts: (WorkoutRow & { exercises: ExerciseWithSets[]; user?: any })[]) => {
     try {
       const today = format(new Date(), 'yyyy-MM-dd');
       

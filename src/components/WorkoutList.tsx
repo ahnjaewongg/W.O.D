@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { supabase } from '../lib/supabaseClient';
-import type { PhotoRow, ExerciseWithSets, WorkoutRow } from '../types/db';
+import type { PhotoRow, ExerciseWithSets, WorkoutRow, UserRow } from '../types/db';
 import DailyPhotoUploader from './DailyPhotoUploader';
 import ImageSlider from './ImageSlider';
 
 type WorkoutWithPhotos = WorkoutRow & { 
   photos: PhotoRow[]; 
   exercises: ExerciseWithSets[];
+  user: UserRow;
 };
 
 type Props = {
@@ -26,6 +27,7 @@ export default function WorkoutList({ userId, filterBodyPart, filterDate, refres
   const [dailyPhotos, setDailyPhotos] = useState<Map<string, PhotoRow[]>>(new Map());
   const [showDailyUploader, setShowDailyUploader] = useState<string | null>(null);
 
+
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -37,7 +39,8 @@ export default function WorkoutList({ userId, filterBodyPart, filterDate, refres
           exercises:exercises(
             *,
             sets:sets(*)
-          )
+          ),
+          user:users(id, email, display_name)
         `)
         .order('date', { ascending: false });
       const query = (() => {
@@ -190,7 +193,21 @@ export default function WorkoutList({ userId, filterBodyPart, filterDate, refres
                     className="flex-1 cursor-pointer"
                     onClick={() => onSelect?.(w)}
                   >
-                    <div className="font-semibold">{w.body_part}</div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="font-semibold">{w.body_part}</div>
+                      {w.user && (
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                          w.user.id === userId 
+                            ? 'bg-orange-100 text-orange-700' 
+                            : 'bg-blue-100 text-blue-700'
+                        }`}>
+                          {w.user.id === userId 
+                            ? '내가 등록' 
+                            : `${w.user.display_name || w.user.email.split('@')[0]}이 등록`
+                          }
+                        </span>
+                      )}
+                    </div>
                     <div className="mt-1 text-sm text-gray-700">
                       {renderSummary(w.exercises)}
                     </div>
