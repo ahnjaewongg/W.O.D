@@ -13,17 +13,22 @@ export default function IndexPage() {
   const [filterDate, setFilterDate] = useState<string | undefined>(undefined);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [refreshKey, setRefreshKey] = useState(0);
+  const [authLoading, setAuthLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       setSessionUserId(session?.user?.id ?? null);
-      if (!session?.user) navigate('/login');
+      setAuthLoading(false);
+      if (!session?.user) navigate('/login', { replace: true });
     });
+    
     supabase.auth.getSession().then(({ data }) => {
       setSessionUserId(data.session?.user?.id ?? null);
-      if (!data.session?.user) navigate('/login');
+      setAuthLoading(false);
+      if (!data.session?.user) navigate('/login', { replace: true });
     });
+    
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
 
@@ -184,6 +189,21 @@ export default function IndexPage() {
       alert(`하루 전체 복사에 실패했습니다: ${(error as Error).message}`);
     }
   };
+
+  // 인증 로딩 중이면 스피너 표시
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 flex items-center justify-center">
+        <div className="card p-8 text-center">
+          <div className="text-2xl font-semibold mb-4">🏋️ 오우~난</div>
+          <div className="flex justify-center mb-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
+          </div>
+          <div className="text-gray-600">운동 기록을 불러오는 중...</div>
+        </div>
+      </div>
+    );
+  }
 
   if (!sessionUserId) return null;
 

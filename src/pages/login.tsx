@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 
@@ -7,7 +7,28 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const navigate = useNavigate();
+
+  // 자동 로그인 확인
+  useEffect(() => {
+    const checkExistingSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          // 이미 로그인된 상태면 메인 페이지로 이동
+          navigate('/', { replace: true });
+          return;
+        }
+      } catch (error) {
+        console.log('Session check failed:', error);
+      } finally {
+        setCheckingAuth(false);
+      }
+    };
+
+    checkExistingSession();
+  }, [navigate]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -49,13 +70,28 @@ export default function LoginPage() {
           await supabase.rpc('ensure_group_key_for_current_user');
         }
       }
-      navigate('/');
+      navigate('/', { replace: true });
     } catch (e) {
       // eslint-disable-next-line no-alert
       alert((e as Error).message);
     } finally {
       setLoading(false);
     }
+  }
+
+  // 인증 상태 확인 중이면 로딩 스피너 표시
+  if (checkingAuth) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-4 login-background">
+        <div className="w-full max-w-sm space-y-4 rounded-lg bg-white p-6 shadow text-center">
+          <div className="text-xl font-semibold">🏋️ 오우~난</div>
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+          </div>
+          <div className="text-sm text-gray-600">로그인 상태 확인 중...</div>
+        </div>
+      </div>
+    );
   }
 
   return (

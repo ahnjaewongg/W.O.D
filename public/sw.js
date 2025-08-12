@@ -1,5 +1,5 @@
 // Service Worker for PWA
-const CACHE_NAME = 'fitness-tracker-v1';
+const CACHE_NAME = 'fitness-tracker-v2';
 const STATIC_CACHE_URLS = [
   '/',
   '/src/main.tsx',
