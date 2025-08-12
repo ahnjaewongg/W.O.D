@@ -1,6 +1,6 @@
 {
-  "name": "Fitness Tracker",
-  "short_name": "FitnessApp",
+  "name": "오우~난",
+  "short_name": "오우~난",
   "description": "개인 운동 기록 및 추적 앱",
   "start_url": "/",
   "display": "standalone",
