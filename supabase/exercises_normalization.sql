@@ -63,7 +63,8 @@ join inserted_exercises ie on ie.workout_id = sb.workout_id and ie.exercise_name
 -- 5. RLS 정책 추가
 alter table public.exercises enable row level security;
 
--- exercises 조회 정책 (그룹 멤버)
+-- exercises 정책들 (기존 것이 있다면 삭제 후 재생성)
+drop policy if exists "Exercises select by group" on public.exercises;
 create policy "Exercises select by group" on public.exercises
 for select using (
   exists (
@@ -77,7 +78,7 @@ for select using (
   )
 );
 
--- exercises 삽입 정책 (그룹 멤버)
+drop policy if exists "Exercises insert by group" on public.exercises;
 create policy "Exercises insert by group" on public.exercises
 for insert with check (
   exists (
@@ -91,7 +92,7 @@ for insert with check (
   )
 );
 
--- exercises 수정 정책 (그룹 멤버)
+drop policy if exists "Exercises update by group" on public.exercises;
 create policy "Exercises update by group" on public.exercises
 for update using (
   exists (
@@ -115,7 +116,7 @@ for update using (
   )
 );
 
--- exercises 삭제 정책 (그룹 멤버)
+drop policy if exists "Exercises delete by group" on public.exercises;
 create policy "Exercises delete by group" on public.exercises
 for delete using (
   exists (
@@ -134,6 +135,10 @@ drop policy if exists "Sets select via workout group" on public.sets;
 drop policy if exists "Sets insert via workout group" on public.sets;
 drop policy if exists "Sets update via workout group" on public.sets;
 drop policy if exists "Sets delete via workout group" on public.sets;
+drop policy if exists "Sets select via exercise group" on public.sets;
+drop policy if exists "Sets insert via exercise group" on public.sets;
+drop policy if exists "Sets update via exercise group" on public.sets;
+drop policy if exists "Sets delete via exercise group" on public.sets;
 
 -- sets 조회 정책
 create policy "Sets select via exercise group" on public.sets
