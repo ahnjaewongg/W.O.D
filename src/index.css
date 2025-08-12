@@ -70,6 +70,49 @@ body::after {
   position: relative;
 }
 
+/* Mobile-responsive containers */
+.container {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+/* Mobile-first responsive grid */
+.responsive-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6;
+}
+
+/* Mobile-friendly spacing */
+.mobile-space-y {
+  @apply space-y-3 sm:space-y-4 lg:space-y-6;
+}
+
+.mobile-space-x {
+  @apply space-x-2 sm:space-x-3 lg:space-x-4;
+}
+
+/* Touch-friendly interactive areas */
+.touch-area {
+  @apply p-4 sm:p-6 lg:p-8;
+  min-height: 44px;
+}
+
+/* Mobile typography */
+@media (max-width: 768px) {
+  .card {
+    @apply rounded-xl; /* Slightly smaller radius on mobile */
+    margin: 0.5rem 0;
+  }
+  
+  h1 { @apply text-xl sm:text-2xl lg:text-3xl; }
+  h2 { @apply text-lg sm:text-xl lg:text-2xl; }
+  h3 { @apply text-base sm:text-lg lg:text-xl; }
+  
+  /* Prevent text selection on buttons */
+  button {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
+
 /* Add plate character to workout cards */
 .workout-item::after {
   content: '';
@@ -98,9 +141,19 @@ body::after {
 }
 
 .btn-primary {
-  @apply rounded-xl bg-gradient-to-r from-orange-400 to-orange-500 text-white px-4 py-2 hover:from-orange-500 hover:to-orange-600 disabled:opacity-50 font-medium;
+  @apply rounded-xl bg-gradient-to-r from-orange-400 to-orange-500 text-white px-6 py-3 hover:from-orange-500 hover:to-orange-600 disabled:opacity-50 font-medium text-base;
   box-shadow: 0 4px 15px rgba(255, 154, 0, 0.3);
   transition: all 0.2s ease;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Mobile-specific button sizes */
+@media (max-width: 768px) {
+  .btn-primary {
+    @apply px-4 py-3 text-sm;
+    min-height: 48px;
+  }
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -109,7 +162,17 @@ body::after {
 }
 
 .btn-outline {
-  @apply rounded-xl border-2 border-orange-200 px-3 py-2 hover:bg-orange-50 hover:border-orange-300 transition-all duration-200;
+  @apply rounded-xl border-2 border-orange-200 px-4 py-2 hover:bg-orange-50 hover:border-orange-300 transition-all duration-200 text-sm font-medium bg-white text-gray-700;
+  min-height: 40px;
+  min-width: 40px;
+}
+
+/* Mobile-specific outline buttons */
+@media (max-width: 768px) {
+  .btn-outline {
+    @apply px-3 py-2 text-xs;
+    min-height: 44px;
+  }
 }
 
 /* Character-inspired decorative elements */
@@ -179,6 +242,38 @@ body::after {
   background-repeat: no-repeat;
   background-position: center;
   opacity: 0.8;
+}
+
+/* Mobile-first responsive design and input styling */
+* {
+  box-sizing: border-box;
+}
+
+/* Prevent horizontal scrolling */
+body {
+  overflow-x: hidden;
+}
+
+/* Mobile-friendly input fields */
+input, select, textarea {
+  @apply bg-white border border-gray-300 text-gray-900 placeholder-gray-500;
+  transition: all 0.2s ease;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  font-size: 16px; /* Prevent zoom on iOS */
+  min-height: 44px; /* Minimum touch target size */
+}
+
+input:focus, select:focus, textarea:focus {
+  @apply outline-none ring-2 ring-orange-400 border-orange-400 bg-white;
+}
+
+/* Mobile-friendly buttons */
+button {
+  @apply min-h-[44px] min-w-[44px]; /* Touch-friendly minimum size */
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Smooth transitions for all interactive elements */

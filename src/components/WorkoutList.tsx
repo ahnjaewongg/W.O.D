@@ -203,7 +203,7 @@ export default function WorkoutList({ userId, filterBodyPart, filterDate, refres
                           e.stopPropagation();
                           onCopyWorkout(w);
                         }}
-                        className="btn-outline px-2 py-1 text-xs"
+                        className="btn-outline px-3 py-2 text-sm min-h-[44px]"
                         title="이 운동을 오늘 날짜로 복사"
                       >
                         📋 복사

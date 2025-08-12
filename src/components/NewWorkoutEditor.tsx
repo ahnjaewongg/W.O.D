@@ -298,24 +298,24 @@ export default function NewWorkoutEditor({ userId, workout, onSaved, onDeleted }
             ))}
           </select>
         </label>
-        <label className="col-span-2 block">
-          <div className="text-sm text-gray-600">메모</div>
+        <label className="col-span-full block">
+          <div className="text-sm font-medium text-gray-700 mb-1">📝 운동 노트</div>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            className="mt-1 w-full rounded border px-3 py-2"
+            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-500 focus:border-orange-400 focus:ring-2 focus:ring-orange-400 resize-none"
             rows={3}
-            placeholder="느낌이나 메모를 남겨주세요"
+            placeholder="오늘 운동에 대한 메모를 작성하세요..."
           />
         </label>
       </div>
 
       {/* 운동 목록 */}
       <div>
-        <div className="mb-2 flex items-center justify-between">
-          <div className="font-semibold">운동 목록</div>
+        <div className="mb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div className="font-semibold text-lg">🏋️ 운동 목록</div>
           <button type="button" className="btn-outline" onClick={addExercise}>
-            + 운동 추가
+            ➕ 운동 추가
           </button>
         </div>
         
@@ -352,18 +352,22 @@ export default function NewWorkoutEditor({ userId, workout, onSaved, onDeleted }
         </div>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-2">
         <button
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
+          className="btn-primary flex-1 sm:flex-none"
         >
-          {saving ? '저장중...' : '저장'}
+          {saving ? '💾 저장중...' : '💾 저장'}
         </button>
         {workout && (
-          <button type="button" onClick={handleDelete} className="rounded border px-4 py-2">
-            삭제
+          <button 
+            type="button" 
+            onClick={handleDelete} 
+            className="rounded-lg border-2 border-red-300 bg-white px-4 py-3 text-red-700 font-medium hover:bg-red-50 hover:border-red-400 min-h-[44px] flex-1 sm:flex-none"
+          >
+            🗑️ 삭제
           </button>
         )}
       </div>

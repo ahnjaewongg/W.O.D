@@ -85,11 +85,11 @@ export default function ExerciseEditor({
             <button
               type="button"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-blue-600 hover:text-blue-800"
+              className="text-orange-600 hover:text-orange-800"
             >
               {isExpanded ? '▼' : '▶'}
             </button>
-            <span className="text-sm font-semibold text-blue-800">
+            <span className="text-sm font-semibold text-orange-800">
               운동 {exerciseIndex + 1}
             </span>
           </div>
@@ -98,7 +98,7 @@ export default function ExerciseEditor({
             type="text"
             value={exercise.exercise_name}
             onChange={(e) => updateExerciseName(e.target.value)}
-            className="flex-1 rounded border px-3 py-2 font-semibold"
+            className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-3 font-semibold text-gray-900 focus:border-orange-400 focus:ring-2 focus:ring-orange-400"
             placeholder="운동명 (예: 벤치프레스)"
             list={`exercise-suggestions-${exercise.id}`}
           />
@@ -110,7 +110,7 @@ export default function ExerciseEditor({
             type="button"
             onClick={onMoveUp}
             disabled={!canMoveUp}
-            className="btn-outline px-2 py-1 text-xs disabled:opacity-50"
+            className="btn-outline px-3 py-2 text-sm disabled:opacity-50 min-h-[44px] min-w-[44px]"
             title="위로 이동"
           >
             ↑
@@ -119,7 +119,7 @@ export default function ExerciseEditor({
             type="button"
             onClick={onMoveDown}
             disabled={!canMoveDown}
-            className="btn-outline px-2 py-1 text-xs disabled:opacity-50"
+            className="btn-outline px-3 py-2 text-sm disabled:opacity-50 min-h-[44px] min-w-[44px]"
             title="아래로 이동"
           >
             ↓
@@ -161,7 +161,7 @@ export default function ExerciseEditor({
             </div>
             
             {exercise.sets.map((set, setIndex) => (
-              <div key={set.id} className="grid grid-cols-12 gap-2 p-2 border-t">
+              <div key={set.id} className="grid grid-cols-12 gap-2 p-3 border-t touch-area">
                 <div className="col-span-2 flex items-center text-sm font-medium">
                   {setIndex + 1}
                 </div>
@@ -170,7 +170,7 @@ export default function ExerciseEditor({
                     type="number"
                     value={set.rep_count}
                     onChange={(e) => updateSet(setIndex, { rep_count: Number(e.target.value) })}
-                    className="w-full rounded border px-2 py-1 text-center"
+                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-center text-gray-900 focus:border-orange-400 focus:ring-2 focus:ring-orange-400"
                     min={1}
                   />
                 </div>
@@ -179,7 +179,7 @@ export default function ExerciseEditor({
                     type="number"
                     value={set.weight || 0}
                     onChange={(e) => updateSet(setIndex, { weight: Number(e.target.value) })}
-                    className="w-full rounded border px-2 py-1 text-center"
+                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-center text-gray-900 focus:border-orange-400 focus:ring-2 focus:ring-orange-400"
                     min={0}
                     step="0.5"
                   />
