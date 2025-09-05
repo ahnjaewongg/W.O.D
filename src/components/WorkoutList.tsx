@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { supabase } from '../lib/supabaseClient';
+import { getPhotoUrl } from '../lib/photoUtils';
 import type { PhotoRow, ExerciseWithSets, WorkoutRow, UserRow } from '../types/db';
 import DailyPhotoUploader from './DailyPhotoUploader';
 import ImageSlider from './ImageSlider';
@@ -26,6 +27,7 @@ export default function WorkoutList({ userId, filterBodyPart, filterDate, refres
   const [loading, setLoading] = useState(true);
   const [dailyPhotos, setDailyPhotos] = useState<Map<string, PhotoRow[]>>(new Map());
   const [showDailyUploader, setShowDailyUploader] = useState<string | null>(null);
+  const [photoUrls, setPhotoUrls] = useState<Map<string, string>>(new Map());
 
 
   useEffect(() => {
@@ -50,7 +52,23 @@ export default function WorkoutList({ userId, filterBodyPart, filterDate, refres
         return cur;
       })();
       const { data, error } = await query.returns<WorkoutWithPhotos[]>();
-      if (!error && data) setWorkouts(data);
+      if (!error && data) {
+        setWorkouts(data);
+        
+        // 모든 사진의 새로운 Signed URL 생성
+        const urlMap = new Map<string, string>();
+        for (const workout of data) {
+          for (const photo of workout.photos || []) {
+            if (photo.storage_path) {
+              const url = await getPhotoUrl(photo.storage_path);
+              if (url) {
+                urlMap.set(photo.storage_path, url);
+              }
+            }
+          }
+        }
+        setPhotoUrls(urlMap);
+      }
       setLoading(false);
     };
     load();
@@ -68,13 +86,26 @@ export default function WorkoutList({ userId, filterBodyPart, filterDate, refres
       
       if (data) {
         const photosByDate = new Map<string, PhotoRow[]>();
+        const dailyUrlMap = new Map<string, string>();
+        
         for (const photo of data) {
           const date = photo.date!;
           const existing = photosByDate.get(date) || [];
           existing.push(photo);
           photosByDate.set(date, existing);
+          
+          // 일별 사진의 새로운 Signed URL 생성
+          if (photo.storage_path) {
+            const url = await getPhotoUrl(photo.storage_path);
+            if (url) {
+              dailyUrlMap.set(photo.storage_path, url);
+            }
+          }
         }
+        
         setDailyPhotos(photosByDate);
+        // 기존 photoUrls에 일별 사진 URL들도 추가
+        setPhotoUrls(prev => new Map([...prev, ...dailyUrlMap]));
       }
     };
     loadDailyPhotos();
@@ -108,10 +139,23 @@ export default function WorkoutList({ userId, filterBodyPart, filterDate, refres
                 </div>
                 {primaryPhoto && (
                   <img 
-                    src={primaryPhoto.public_url || ''} 
+                    src={primaryPhoto.storage_path ? 
+                      photoUrls.get(primaryPhoto.storage_path) || primaryPhoto.public_url || '' : 
+                      primaryPhoto.public_url || ''} 
                     alt="Day highlight" 
                     className="w-8 h-8 rounded-full object-cover border-2 border-orange-300"
                     title="오늘의 대표 사진"
+                    onError={async (e) => {
+                      // 이미지 로드 실패 시 새로운 Signed URL로 재시도
+                      if (primaryPhoto?.storage_path) {
+                        const newUrl = await getPhotoUrl(primaryPhoto.storage_path);
+                        if (newUrl) {
+                          e.currentTarget.src = newUrl;
+                          // URL 캐시 업데이트
+                          setPhotoUrls(prev => new Map(prev).set(primaryPhoto.storage_path, newUrl));
+                        }
+                      }
+                    }}
                   />
                 )}
               </div>
@@ -173,7 +217,7 @@ export default function WorkoutList({ userId, filterBodyPart, filterDate, refres
             {/* 일별 사진 슬라이더 */}
             {dayPhotos.length > 0 && (
               <div className="mb-3">
-                <ImageSlider photos={dayPhotos} className="max-w-sm mx-auto" />
+                <ImageSlider photos={dayPhotos} className="max-w-sm mx-auto" photoUrls={photoUrls} />
                 {dayPhotos.length > 1 && (
                   <div className="text-center text-xs text-gray-500 mt-1">
                     친구들과 함께한 추억 {dayPhotos.length}장
@@ -229,9 +273,23 @@ export default function WorkoutList({ userId, filterBodyPart, filterDate, refres
                     {w.photos?.[0] && (
                       <div className="w-16 h-16 rounded overflow-hidden bg-gray-100 flex-shrink-0">
                         <img
-                          src={w.photos[0].public_url ?? ''}
+                          src={w.photos[0].storage_path ? 
+                            photoUrls.get(w.photos[0].storage_path) || w.photos[0].public_url || '' : 
+                            w.photos[0].public_url || ''}
                           alt="thumb"
                           className="w-full h-full object-cover"
+                          onError={async (e) => {
+                            // 이미지 로드 실패 시 새로운 Signed URL로 재시도
+                            const photo = w.photos[0];
+                            if (photo?.storage_path) {
+                              const newUrl = await getPhotoUrl(photo.storage_path);
+                              if (newUrl) {
+                                e.currentTarget.src = newUrl;
+                                // URL 캐시 업데이트
+                                setPhotoUrls(prev => new Map(prev).set(photo.storage_path, newUrl));
+                              }
+                            }
+                          }}
                         />
                       </div>
                     )}

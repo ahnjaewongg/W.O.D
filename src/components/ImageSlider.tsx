@@ -1,13 +1,43 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { PhotoRow } from '../types/db';
+import { getPhotoUrl } from '../lib/photoUtils';
 
 type ImageSliderProps = {
   photos: PhotoRow[];
   className?: string;
+  photoUrls?: Map<string, string>;
 };
 
-export default function ImageSlider({ photos, className = '' }: ImageSliderProps) {
+export default function ImageSlider({ photos, className = '', photoUrls: externalPhotoUrls }: ImageSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [internalPhotoUrls, setInternalPhotoUrls] = useState<Map<string, string>>(new Map());
+
+  // 사진이 변경될 때마다 새로운 Signed URL 생성 (외부 URL이 없을 때만)
+  useEffect(() => {
+    if (externalPhotoUrls) {
+      setInternalPhotoUrls(externalPhotoUrls);
+      return;
+    }
+
+    const generateUrls = async () => {
+      const urlMap = new Map<string, string>();
+      
+      for (const photo of photos) {
+        if (photo.storage_path) {
+          const url = await getPhotoUrl(photo.storage_path);
+          if (url) {
+            urlMap.set(photo.storage_path, url);
+          }
+        }
+      }
+      
+      setInternalPhotoUrls(urlMap);
+    };
+
+    if (photos.length > 0) {
+      generateUrls();
+    }
+  }, [photos, externalPhotoUrls]);
 
   if (photos.length === 0) return null;
 
@@ -29,11 +59,23 @@ export default function ImageSlider({ photos, className = '' }: ImageSliderProps
       <div className="relative w-full overflow-hidden rounded-lg bg-gray-100">
         <div className="aspect-[4/3] w-full">
           <img 
-            src={photos[currentIndex]?.public_url || ''} 
+            src={photos[currentIndex]?.storage_path ? 
+              internalPhotoUrls.get(photos[currentIndex].storage_path) || '' : 
+              photos[currentIndex]?.public_url || ''} 
             alt={`Photo ${currentIndex + 1}`}
             className="h-full w-full object-cover"
-            onError={(e) => {
-              // 이미지 로드 실패 시 대체 이미지
+            onError={async (e) => {
+              // 이미지 로드 실패 시 새로운 Signed URL로 재시도
+              const currentPhoto = photos[currentIndex];
+              if (currentPhoto?.storage_path) {
+                const newUrl = await getPhotoUrl(currentPhoto.storage_path);
+                if (newUrl) {
+                  e.currentTarget.src = newUrl;
+                  setInternalPhotoUrls(prev => new Map(prev).set(currentPhoto.storage_path, newUrl));
+                  return;
+                }
+              }
+              // 그래도 실패하면 대체 이미지
               e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgZmlsbD0iI2Y5ZmFmYiIvPjx0ZXh0IHg9IjEwMCIgeT0iNzUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzljYTNhZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9IjAuM2VtIj7snbTrr7jsp4A8L3RleHQ+PC9zdmc+';
             }}
           />
