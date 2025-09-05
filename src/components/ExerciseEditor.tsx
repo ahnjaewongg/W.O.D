@@ -196,19 +196,11 @@ export default function ExerciseEditor({
                 <div className="col-span-1 flex items-center gap-1">
                   <button
                     type="button"
-                    onClick={() => duplicateSet(setIndex)}
-                    className="text-xs text-blue-600 hover:text-blue-800"
-                    title="세트 복제"
-                  >
-                    📋
-                  </button>
-                  <button
-                    type="button"
                     onClick={() => deleteSet(setIndex)}
                     className="text-xs text-red-600 hover:text-red-800"
                     title="세트 삭제"
                   >
-                    ✕
+                    🗑️
                   </button>
                 </div>
               </div>
