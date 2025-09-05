@@ -225,88 +225,116 @@ export default function IndexPage() {
         </nav>
       </header>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        <div className="md:col-span-2 space-y-4">
-          <div className="card flex items-center gap-2 p-3">
-            <select
-              value={filterBodyPart ?? ''}
-              onChange={(e) => setFilterBodyPart(e.target.value || undefined)}
-              className="rounded border px-3 py-2"
-            >
-              <option value="">전체 부위 선택</option>
-              {['가슴', '등', '다리', '이두', '삼두', '어깨'].map((bp) => (
-                <option key={bp} value={bp}>
-                  {bp}
-                </option>
-              ))}
-            </select>
-            <button
-              className="btn-primary bg-green-600 hover:bg-green-700"
-              onClick={() => setSelectedWorkout({
-                id: '',
-                user_id: sessionUserId,
-                date: format(new Date(), 'yyyy-MM-dd'),
-                body_part: '가슴',
-                notes: '',
-                created_at: new Date().toISOString(),
-              })}
-            >
-              운동 기록 추가
-            </button>
-          </div>
-          <WorkoutList 
-            userId={sessionUserId} 
-            filterBodyPart={filterBodyPart} 
-            filterDate={filterDate} 
-            refreshKey={refreshKey} 
-            onSelect={(w) => setSelectedWorkout(w)}
-            onCopyWorkout={handleCopyWorkout}
-            onCopyDay={handleCopyDay}
-          />
+      {/* 캘린더 섹션 - 모바일에서 상단으로 이동 */}
+      <div className="card space-y-3 p-3 mb-4">
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            className="btn-outline px-2 py-1"
+            onClick={() => setCalendarMonth(addDays(startOfMonth(calendarMonth), -1))}
+          >
+            ◀
+          </button>
+          <div className="font-semibold">{format(calendarMonth, 'MMMM yyyy')}</div>
+          <button
+            type="button"
+            className="btn-outline px-2 py-1"
+            onClick={() => setCalendarMonth(addDays(endOfMonth(calendarMonth), 1))}
+          >
+            ▶
+          </button>
         </div>
-        <div className="card space-y-3 p-3">
-          <div className="flex items-center justify-between">
-            <button
-              type="button"
-              className="btn-outline px-2 py-1"
-              onClick={() => setCalendarMonth(addDays(startOfMonth(calendarMonth), -1))}
-            >
-              ◀
-            </button>
-            <div className="font-semibold">{format(calendarMonth, 'MMMM yyyy')}</div>
-            <button
-              type="button"
-              className="btn-outline px-2 py-1"
-              onClick={() => setCalendarMonth(addDays(endOfMonth(calendarMonth), 1))}
-            >
-              ▶
-            </button>
+        <div className="grid grid-cols-7 gap-1 text-center text-xs text-gray-600">
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
+            <div key={d}>{d}</div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7 gap-1">
+          {daysInMonth.map((d, i) => {
+            const iso = format(d, 'yyyy-MM-dd');
+            const hasWorkout = datesWithWorkouts.some((w) => isSameDay(new Date(w), d));
+            const isToday = isSameDay(d, new Date());
+            const isSelected = filterDate === iso;
+            return (
+              <button
+                key={i}
+                type="button"
+                className={`h-12 rounded border text-sm transition-colors relative ${
+                  isSelected 
+                    ? 'bg-orange-500 text-white border-orange-500' 
+                    : hasWorkout 
+                      ? 'bg-orange-50 border-orange-300 calendar-day-with-workout' 
+                      : 'bg-white hover:bg-orange-25'
+                }`}
+                title={iso}
+                onClick={() => setFilterDate(iso)}
+              >
+                <div className="text-xs">{format(d, 'd')}</div>
+                {isToday && !isSelected && (
+                  <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-orange-500 rounded-full"></div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 운동 기록 섹션 */}
+      <div className="space-y-4">
+        {/* 선택된 날짜 표시 */}
+        {filterDate && (
+          <div className="card p-3 bg-orange-50 border-orange-200">
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-medium text-orange-800">
+                📅 {format(new Date(filterDate), 'yyyy년 M월 d일 (EEE)')} 선택됨
+              </div>
+              <button
+                type="button"
+                onClick={() => setFilterDate(undefined)}
+                className="text-orange-600 hover:text-orange-800 text-sm"
+              >
+                ✕
+              </button>
+            </div>
           </div>
-          <div className="grid grid-cols-7 gap-1 text-center text-xs text-gray-600">
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
-              <div key={d}>{d}</div>
+        )}
+
+        <div className="card flex items-center gap-2 p-3">
+          <select
+            value={filterBodyPart ?? ''}
+            onChange={(e) => setFilterBodyPart(e.target.value || undefined)}
+            className="rounded border px-3 py-2 flex-1"
+          >
+            <option value="">전체 부위 선택</option>
+            {['가슴', '등', '다리', '이두', '삼두', '어깨'].map((bp) => (
+              <option key={bp} value={bp}>
+                {bp}
+              </option>
             ))}
-          </div>
-          <div className="grid grid-cols-7 gap-1">
-            {daysInMonth.map((d, i) => {
-              const iso = format(d, 'yyyy-MM-dd');
-              const hasWorkout = datesWithWorkouts.some((w) => isSameDay(new Date(w), d));
-              return (
-                <button
-                  key={i}
-                  type="button"
-                  className={`h-12 rounded border text-sm transition-colors ${
-                    hasWorkout ? 'bg-orange-50 border-orange-300 calendar-day-with-workout' : 'bg-white hover:bg-orange-25'
-                  }`}
-                  title={iso}
-                  onClick={() => setFilterDate(iso)}
-                >
-                  <div className="text-xs">{format(d, 'd')}</div>
-                </button>
-              );
+          </select>
+          <button
+            className={`btn-primary ${filterDate ? 'bg-orange-600 hover:bg-orange-700' : 'bg-green-600 hover:bg-green-700'}`}
+            onClick={() => setSelectedWorkout({
+              id: '',
+              user_id: sessionUserId,
+              date: filterDate || format(new Date(), 'yyyy-MM-dd'),
+              body_part: '가슴',
+              notes: '',
+              created_at: new Date().toISOString(),
             })}
-          </div>
+          >
+            {filterDate ? '선택한 날에 추가' : '운동 기록 추가'}
+          </button>
         </div>
+        <WorkoutList 
+          userId={sessionUserId} 
+          filterBodyPart={filterBodyPart} 
+          filterDate={filterDate} 
+          refreshKey={refreshKey} 
+          onSelect={(w) => setSelectedWorkout(w)}
+          onCopyWorkout={handleCopyWorkout}
+          onCopyDay={handleCopyDay}
+        />
       </div>
 
       <dialog id="editorDialog" open={!!selectedWorkout} className="w-full max-w-3xl rounded-lg p-0">
